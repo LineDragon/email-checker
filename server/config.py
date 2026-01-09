@@ -25,11 +25,12 @@ class Settings(BaseSettings):
 # OAuth scopes
 GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/gmail.readonly",
     "openid",
     "https://www.googleapis.com/auth/userinfo.email"
 ]
 
-OUTLOOK_SCOPES = ["User.Read", "Mail.Send"]
+OUTLOOK_SCOPES = ["User.Read", "Mail.Send", "Mail.Read"]
 
 # CORS origins
 CORS_ORIGINS = ["http://localhost:3000", "http://localhost:5173"]

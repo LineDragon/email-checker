@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import EmailListView from './EmailListView'
+import InboxView from './InboxView'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 function App() {
+  const [currentView, setCurrentView] = useState('send') // 'send', 'list', or 'inbox'
   const [googleConnected, setGoogleConnected] = useState(false)
   const [googleEmail, setGoogleEmail] = useState(null)
   const [outlookConnected, setOutlookConnected] = useState(false)
@@ -89,9 +92,14 @@ function App() {
       if (response.data.connected) {
         setOutlookConnected(true)
         setOutlookEmail(response.data.email)
+      } else {
+        setOutlookConnected(false)
+        setOutlookEmail(null)
       }
     } catch (err) {
       console.error('Error checking Outlook status:', err)
+      setOutlookConnected(false)
+      setOutlookEmail(null)
     }
   }
 
@@ -304,11 +312,101 @@ function App() {
     }
   }
 
+  // Show email list view if selected
+  if (currentView === 'list') {
+    return (
+      <div className="app">
+        <div className="container">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '2rem',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <div>
+              <h1 className="title">Bulk Email Sender</h1>
+              <p className="subtitle">View and manage email recipients</p>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => setCurrentView('send')}
+            >
+              ← Back to Send Emails
+            </button>
+          </div>
+          <EmailListView />
+        </div>
+      </div>
+    )
+  }
+
+  // Show inbox view if selected
+  if (currentView === 'inbox') {
+    const connectedProvider = googleConnected ? 'google' : 'outlook'
+    const connectedEmail = googleConnected ? googleEmail : outlookEmail
+    
+    return (
+      <div className="app">
+        <div className="container">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '2rem',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <div>
+              <h1 className="title">Bulk Email Sender</h1>
+              <p className="subtitle">View inbox emails from connected account</p>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => setCurrentView('send')}
+            >
+              ← Back to Send Emails
+            </button>
+          </div>
+          <InboxView provider={connectedProvider} email={connectedEmail} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <div className="container">
-        <h1 className="title">Bulk Email Sender</h1>
-        <p className="subtitle">Send emails to multiple recipients with ease</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div>
+            <h1 className="title">Bulk Email Sender</h1>
+            <p className="subtitle">Send emails to multiple recipients with ease</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setCurrentView('list')}
+            >
+              📋 View Email List
+            </button>
+            {anyProviderConnected && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setCurrentView('inbox')}
+              >
+                📬 View Inbox
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="card">
           <h2 className="card-title">Connect Your Account</h2>

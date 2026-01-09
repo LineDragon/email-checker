@@ -40,9 +40,15 @@ class OutlookAuthService:
     def get_authorization_url(self) -> str:
         """Get Outlook OAuth authorization URL."""
         self.ensure_enabled()
+        redirect_uri = self.settings.OUTLOOK_REDIRECT_URI
+        # Log for debugging (remove in production)
+        import logging
+        logging.info(f"Outlook OAuth - Using redirect URI: {redirect_uri}")
+        logging.info(f"Outlook OAuth - Client ID: {self.settings.OUTLOOK_CLIENT_ID[:8]}...")
+        
         return self.app.get_authorization_request_url(
             scopes=OUTLOOK_SCOPES,
-            redirect_uri=self.settings.OUTLOOK_REDIRECT_URI,
+            redirect_uri=redirect_uri,
             prompt="consent",
         )
     
@@ -97,7 +103,11 @@ class OutlookAuthService:
     
     def get_access_token(self) -> str:
         """Return a valid Outlook access token, refreshing when possible."""
-        self.ensure_enabled()
+        if not self.app:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Outlook integration is not configured on the server.",
+            )
         
         if not self.auth_state:
             raise HTTPException(
@@ -141,7 +151,7 @@ class OutlookAuthService:
         try:
             self.get_access_token()
             return True
-        except HTTPException:
+        except (HTTPException, Exception):
             return False
     
     def send_email(self, access_token: str, to_email: str, subject: str, body: str):
