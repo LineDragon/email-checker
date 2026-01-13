@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     OUTLOOK_CLIENT_SECRET: Optional[str] = None
     OUTLOOK_REDIRECT_URI: str = "http://localhost:8000/api/outlook/callback"
     OUTLOOK_TENANT: str = "common"
+    GPT_API_KEY: Optional[str] = None
     
     model_config = ConfigDict(
         env_file=".env",
